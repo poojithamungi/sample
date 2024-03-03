@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body,html
+{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+*
+{
+    box-sizing: border-box;
+}
+#main
+{
+    width: 100%;
+    height: 100%;
+}
+
+#title
+{
+    text-align: center;
+    margin-bottom: 0.5%;
+    padding: 0.5%;
+}
+
+.navbar
+{
+    margin-bottom: 1%;
+}
+.nav
+{
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.btns1,.btns2,.btns3
+{
+    border: 3px solid white;
+    width: fit-content;
+    background-color: #953e12;
+    color: white;
+    cursor: pointer;
+    list-style-type: none;
+    margin-left: 2%;
+    padding: 1% 2.5%;
+    transform:skew(5deg)
+
+}
+
+#card,#Gallery,#achievements-card {
+    background-color: wheat;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    max-width: 75%;
+    height: 65%;
+    display: flex;
+    flex-direction: row;
+    margin: auto auto;
+}
+
+#Gallery,#achievements-card
+{
+    display: none;
+}
+
+#img-div
+{
+    border: 5px solid #953e12;
+    width: 40%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#image {
+    max-width: 100%;
+    min-width: 100%; 
+    height: 100%; 
+}
+
+#img-caption
+{
+    text-align: center;
+}
+
+img:hover {
+    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+  }
+#About,#achievements
+{
+    width: 60%;
+    height: 100%;
+    padding-top: 2.5%;
+
+}
+
+#About-title,#achievements-title
+{
+    text-align: center;
+}
+
+#About-info,#achievement-info
+{
+    text-align: justify;
+    margin: 2%;
+    font-size: larger;
+
+}
+
+.list
+{
+    margin: 2%;
+    font-size: larger;
+}
+
+#tribute
+{
+    background-color: black;
+    color: white;
+    width: 100%;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+}
+#tribute-link
+{
+    margin-left: 1%;
+}
+    </style>
+    <script>
+        const About = () => {
+    document.getElementById("card").style.display = "flex";
+    document.getElementById("achievements-card").style.display = "none";
+    document.getElementById("Gallery").style.display = "none";
+};
+
+const Ack = () => {
+    document.getElementById("card").style.display = "none";
+    document.getElementById("achievements-card").style.display = "flex";
+    document.getElementById("Gallery").style.display = "none";
+};
+
+const Gallery = () => {
+    document.getElementById("card").style.display = "none";
+    document.getElementById("achievements-card").style.display = "none";
+    document.getElementById("Gallery").style.display = "flex";
+};
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="./images/ViratKohliAbout.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <script src="index.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <title>Virat Kohli </title>
+</head>
+<body>
+<main id="main">
+    <div id="title">
+        <h1>Virat Kohli-<span>The Run Machine</span></h1>
+    </div>
+    <div class="navbar">
+        <div class="navbtns">
+            <ul class="nav">
+                <li onclick="About()" class="btns1">About</li>
+                <li onclick="Ack()" class="btns2">Acheivements</li>
+                <li onclick="Gallery()" class="btns3">Gallery</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="card" data-aos="fade-up">
+        <div id="img-div">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtlbXfG0NBPLEK4LJmIXsy81S80xKztCJ9qA&usqp=CAU" alt="Virat Kohli" id="image">
+        </div>
+        <div id="About">
+            <h1 id="About-title">About</h1>
+            <p id="About-info">Virat Kohli is an Indian cricketer, rated as one of the best batsmen across all the cricket formats. Considered as a fierce competitor, he occasionally performs as a right-arm medium pace bowler. He is known for his dependable and powerful batting style and has single-handedly won several matches for India. Virat became fascinated with cricket quite early on in his life and took to the bat when he was just three. His parents recognized his potential and had him enrolled at the West Delhi Cricket Academy when he was nine years old. He developed into a very talented player over the ensuing years and represented his city Delhi at various age-group levels and domestic cricket. His first major success came in 2008 when he captained India Under-19s to victory at the 2008 Under-19 World Cup. Soon he was selected to play for the Indian team and established himself as a valuable number 3 batsman. After having gained a reputation as an “ODI specialist”, he proved his mettle in test cricket and T20 cricket as well. Currently, he is the captain of the Indian team in all the 3 formats of the game.</p>
+        </div>
+    </div>
+
+     <div id="achievements-card" data-aos="">
+        <div id="img-div">
+            <img src="https://cdn.zeebiz.com/sites/default/files/2022/11/05/209096-virat-kohli-7-pti.jpg" alt="Virat Kohli" id="image">
+            <figcaption id="img-caption">Kohli receiving the Padma Shri award from President Pranab Mukherjee in March 2017</figcaption>
+        </div>
+        <div id="achievements">
+            <h1 id="achievements-title">Virat Kohli's Achievements</h1>
+            <ul id="achievement-info">
+                <li class="list">Ranked as the world's No. 1 ODI batsman by the ICC</li>
+                <li class="list">Recipient of the Rajiv Gandhi Khel Ratna award, India's highest sporting honor</li>
+                <li class="list">Captained the Indian cricket team to numerous historic victories</li>
+                <li class="list">Holds the record for the fastest century by an Indian cricketer in ODIs</li>
+                <li class="list">Multiple-time recipient of the Sir Garfield Sobers Trophy for ICC Cricketer of the Year</li>
+                <li class="list">First Indian cricketer to score three centuries in his first three innings as a Test captain</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div id="Gallery" data-aos="">
+        <img src="https://cdn.zeebiz.com/sites/default/files/2022/11/05/209096-virat-kohli-7-pti.jpg" width="100%" alt="">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtlbXfG0NBPLEK4LJmIXsy81S80xKztCJ9qA&usqp=CAU" width="100%" alt="">
+    </div>
+     
+    <div id="tribute">
+        <h2 id="tribute-info">For More Information<a href="https://en.wikipedia.org/wiki/Virat_Kohli" target="_blank" id="tribute-link">Visit Here</a></h2>
+    </div>
+</main>
+<script>
+    AOS.init()
+</script>
+</body>
+</html>
