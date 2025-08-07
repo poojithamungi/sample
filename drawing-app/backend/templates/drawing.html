@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Drawing Board</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #764ba2;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info span {
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .tool-section {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        
+        .tool-section h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .brush-size {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        .tool-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .tool-btn {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+        
+        .tool-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .tool-btn.active {
+            background: #764ba2;
+            color: white;
+            border-color: #764ba2;
+        }
+        
+        .room-section {
+            margin-top: auto;
+        }
+        
+        .room-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .join-btn {
+            width: 100%;
+            padding: 0.5rem;
+            background: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .users-list {
+            margin-top: 1rem;
+        }
+        
+        .users-list h4 {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .user-item {
+            padding: 0.25rem 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: white;
+        }
+        
+        #drawingCanvas {
+            border: 1px solid #ddd;
+            cursor: crosshair;
+            display: block;
+            margin: 1rem;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .save-section {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .save-btn {
+            padding: 0.5rem 1rem;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .clear-btn {
+            padding: 0.5rem 1rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .header h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Collaborative Drawing Board</h1>
+        <div class="user-info">
+            <span>Welcome, <span id="username">User</span></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="tool-section">
+                <h3>Drawing Tools</h3>
+                <div class="tool-buttons">
+                    <button class="tool-btn active" onclick="setTool('pen')">✏️ Pen</button>
+                    <button class="tool-btn" onclick="setTool('brush')">🖌️ Brush</button>
+                    <button class="tool-btn" onclick="setTool('eraser')">🧽 Eraser</button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <h3>Color</h3>
+                <input type="color" id="colorPicker" class="color-picker" value="#000000">
+            </div>
+            
+            <div class="tool-section">
+                <h3>Brush Size</h3>
+                <input type="range" id="brushSize" class="brush-size" min="1" max="50" value="5">
+                <span id="brushSizeValue">5px</span>
+            </div>
+            
+            <div class="tool-section room-section">
+                <h3>Room</h3>
+                <input type="text" id="roomInput" class="room-input" placeholder="Enter room name" value="default">
+                <button class="join-btn" onclick="joinRoom()">Join Room</button>
+                
+                <div class="users-list">
+                    <h4>Active Users</h4>
+                    <div id="usersList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="drawingCanvas" width="800" height="600"></canvas>
+            
+            <div class="save-section">
+                <button class="save-btn" onclick="saveDrawing()">💾 Save</button>
+                <button class="export-btn" onclick="exportDrawing()">📤 Export PNG</button>
+                <button class="clear-btn" onclick="clearCanvas()">🗑️ Clear</button>
+            </div>
+            
+            <div class="status-bar">
+                <span id="statusText">Connected to room: default</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTool = 'pen';
+        let currentColor = '#000000';
+        let currentSize = 5;
+        let currentRoom = 'default';
+        let socket;
+        let activeUsers = [];
+
+        // Initialize canvas
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Socket.IO connection
+        function connectSocket() {
+            socket = io();
+            
+            socket.on('connect', () => {
+                console.log('Connected to server');
+                updateStatus('Connected to server');
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+                updateStatus('Disconnected from server');
+            });
+            
+            socket.on('draw', (data) => {
+                drawFromData(data);
+            });
+            
+            socket.on('clear_canvas', () => {
+                clearCanvas();
+            });
+            
+            socket.on('user_joined', (data) => {
+                addUser(data.user);
+                updateStatus(`${data.user} joined the room`);
+            });
+            
+            socket.on('user_left', (data) => {
+                removeUser(data.user);
+                updateStatus(`${data.user} left the room`);
+            });
+        }
+
+        // Drawing functions
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.lineWidth = currentSize;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+            
+            if (currentTool === 'eraser') {
+                ctx.strokeStyle = 'white';
+            }
+            
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            
+            // Send drawing data to server
+            socket.emit('draw', {
+                x: x,
+                y: y,
+                tool: currentTool,
+                color: currentColor,
+                size: currentSize,
+                room: currentRoom
+            });
+        }
+
+        function drawFromData(data) {
+            ctx.lineWidth = data.size;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = data.color;
+            
+            if (data.tool === 'eraser') {
+                ctx.strokeStyle = 'white';
+            }
+            
+            ctx.lineTo(data.x, data.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(data.x, data.y);
+        }
+
+        // Tool functions
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function setColor(color) {
+            currentColor = color;
+            socket.emit('change_color', { color: color, room: currentRoom });
+        }
+
+        function setSize(size) {
+            currentSize = size;
+            document.getElementById('brushSizeValue').textContent = size + 'px';
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            socket.emit('clear_canvas', { room: currentRoom });
+        }
+
+        // Room functions
+        function joinRoom() {
+            const roomName = document.getElementById('roomInput').value || 'default';
+            currentRoom = roomName;
+            
+            socket.emit('join_room', { room: roomName });
+            updateStatus(`Joined room: ${roomName}`);
+            activeUsers = [];
+            updateUsersList();
+        }
+
+        function addUser(username) {
+            if (!activeUsers.includes(username)) {
+                activeUsers.push(username);
+                updateUsersList();
+            }
+        }
+
+        function removeUser(username) {
+            activeUsers = activeUsers.filter(user => user !== username);
+            updateUsersList();
+        }
+
+        function updateUsersList() {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = activeUsers.map(user => 
+                `<div class="user-item">👤 ${user}</div>`
+            ).join('');
+        }
+
+        // Save and export functions
+        function saveDrawing() {
+            const canvasData = canvas.toDataURL();
+            
+            fetch('/save-drawing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    canvas_data: canvasData,
+                    room_id: currentRoom
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateStatus('Drawing saved successfully!');
+                } else {
+                    updateStatus('Failed to save drawing');
+                }
+            })
+            .catch(error => {
+                updateStatus('Error saving drawing');
+            });
+        }
+
+        function exportDrawing() {
+            const link = document.createElement('a');
+            link.download = 'drawing.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function updateStatus(message) {
+            document.getElementById('statusText').textContent = message;
+        }
+
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        document.getElementById('colorPicker').addEventListener('change', (e) => {
+            setColor(e.target.value);
+        });
+
+        document.getElementById('brushSize').addEventListener('input', (e) => {
+            setSize(e.target.value);
+        });
+
+        // Initialize
+        connectSocket();
+        joinRoom();
+        
+        // Set username from server (you'll need to pass this from Flask)
+        document.getElementById('username').textContent = 'User';
+    </script>
+</body>
+</html> 
